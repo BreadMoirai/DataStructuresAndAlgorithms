@@ -1,18 +1,27 @@
 package lab03
 
+import com.sun.javafx.charts.Legend
 import javafx.beans.property.DoubleProperty
 import javafx.beans.property.SimpleDoubleProperty
+import javafx.geometry.Orientation
+import javafx.geometry.Pos
 import javafx.scene.Cursor
 import javafx.scene.Group
 import javafx.scene.Node
 import javafx.scene.Scene
 import javafx.scene.control.Alert
+import javafx.scene.control.Label
 import javafx.scene.control.TextFormatter
 import javafx.scene.control.TextInputDialog
 import javafx.scene.control.Tooltip
+import javafx.scene.layout.FlowPane
+import javafx.scene.layout.HBox
+import javafx.scene.layout.TilePane
+import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
 import javafx.scene.shape.Circle
 import javafx.scene.shape.Line
+import javafx.scene.shape.Rectangle
 import javafx.scene.shape.StrokeLineCap
 import javafx.scene.shape.StrokeType
 import javafx.scene.text.Font
@@ -20,7 +29,7 @@ import javafx.scene.text.Text
 import javafx.scene.text.TextAlignment
 import javafx.stage.Stage
 import javafx.util.converter.IntegerStringConverter
-
+import javax.swing.GroupLayout
 
 private val nodeTip = Tooltip("Evaluate This Node")
 
@@ -62,15 +71,50 @@ class ParseTreeStage(tree: ParseTree, title: String) : Stage() {
 
                 graphNodes.add(DragNode(node, p))
                 graphNodes.add(TreeNode(node, p))
-                if (parentPoints.isNotEmpty())
-                    graphNodes.add(BoundLine(parentPoints[i / 2]!!, p))
+                if (parentPoints.isNotEmpty()) graphNodes.add(BoundLine(parentPoints[i / 2]!!, p))
             }
             parentPoints = points
             nodes = children
         }
-
-
+        graphNodes.add(ParseTreeLegend())
         return Group(graphNodes)
+    }
+
+    class ParseTreeLegend : TilePane(Orientation.VERTICAL) {
+        init {
+            children.add(HBox(makeCircle(Color.CORAL), makeLabel("Operation")))
+            children.add(HBox(makeCircle(Color.MEDIUMAQUAMARINE), makeLabel("Integer")))
+            children.add(HBox(makeCircle(Color.CORNFLOWERBLUE), makeLabel("Variable")))
+            children.add(HBox(makeLine(Color.DARKGREEN), makeLabel("Left")))
+            children.add(HBox(makeLine(Color.CADETBLUE), makeLabel("Right")))
+        }
+
+        private fun makeLabel(s: String): Node {
+            val label = Text(s)
+            label.translateY = label.layoutBounds.height / 4
+            label.translateX = 5.0
+            return label
+        }
+
+        private fun makeLine(color: Color): Node {
+            val box = HBox(3.0)
+            box.alignment = Pos.CENTER
+            for (i in 0..2) {
+                val line = Rectangle(6.0, 3.0)
+                line.fill = color.deriveColor(0.0, 1.0, 1.0, 0.5)
+                box.children.add(line)
+            }
+            return box
+        }
+
+        private fun makeCircle(color: Color) : Circle {
+            val circle = Circle(10.0)
+            circle.fill = color.deriveColor(1.0, 1.0, 1.0, 0.5)
+            circle.stroke = color
+            circle.strokeWidth = 2.0
+            circle.strokeType = StrokeType.OUTSIDE
+            return circle
+        }
     }
 
     data class Point(val x: DoubleProperty, val y: DoubleProperty)
@@ -78,10 +122,10 @@ class ParseTreeStage(tree: ParseTree, title: String) : Stage() {
     class DragNode(node: ParseTree.Node, p: Point) : Circle(p.x.get(), p.y.get(), 25.0) {
         init {
             val color = when (node.value) {
-                is ParseTree.Variable -> Color.CORNFLOWERBLUE
+                is ParseTree.Variable  -> Color.CORNFLOWERBLUE
                 is ParseTree.Operation -> Color.CORAL
-                is Int -> Color.MEDIUMAQUAMARINE
-                else -> Color.BLACK
+                is Int                 -> Color.MEDIUMAQUAMARINE
+                else                   -> Color.BLACK
             }
             fill = color.deriveColor(1.0, 1.0, 1.0, 0.5)
             stroke = color
@@ -92,7 +136,7 @@ class ParseTreeStage(tree: ParseTree, title: String) : Stage() {
             enableDrag()
         }
 
-        private fun enableDrag() {
+        fun enableDrag() {
             val dragDelta = DragNode.Delta()
             setOnMousePressed { event ->
                 // record a delta distance for the drag and drop operation.
@@ -108,18 +152,16 @@ class ParseTreeStage(tree: ParseTree, title: String) : Stage() {
                 if (newX > 0 && newX < scene.width) {
                     centerX = newX
                 }
-                val newY = event.y - dragDelta.y
+                val newY = event.y + dragDelta.y
                 if (newY > 0 && newY < scene.height) {
                     centerY = newY
                 }
             }
             setOnMouseEntered { event ->
-                if (!event.isPrimaryButtonDown)
-                    scene.cursor = Cursor.HAND
+                if (!event.isPrimaryButtonDown) scene.cursor = Cursor.HAND
             }
             setOnMouseExited { event ->
-                if (!event.isPrimaryButtonDown)
-                    scene.cursor = Cursor.DEFAULT
+                if (!event.isPrimaryButtonDown) scene.cursor = Cursor.DEFAULT
             }
         }
 
@@ -132,7 +174,7 @@ class ParseTreeStage(tree: ParseTree, title: String) : Stage() {
             val value = node.value
             if (value is ParseTree.Variable) {
                 textProperty().bind(value.string)
-                textProperty().addListener {_, _, _ ->
+                textProperty().addListener { _, _, _ ->
                     translateY = layoutBounds.height / 4
                     translateX = layoutBounds.width / -2
                 }
@@ -169,12 +211,10 @@ class ParseTreeStage(tree: ParseTree, title: String) : Stage() {
                 }
             }
             setOnMouseEntered { event ->
-                if (!event.isPrimaryButtonDown)
-                    scene.cursor = Cursor.CROSSHAIR
+                if (!event.isPrimaryButtonDown) scene.cursor = Cursor.CROSSHAIR
             }
             setOnMouseExited { event ->
-                if (!event.isPrimaryButtonDown)
-                    scene.cursor = Cursor.DEFAULT
+                if (!event.isPrimaryButtonDown) scene.cursor = Cursor.DEFAULT
             }
         }
     }
@@ -186,8 +226,13 @@ class ParseTreeStage(tree: ParseTree, title: String) : Stage() {
             endXProperty().bind(end.x)
             endYProperty().bind(end.y)
             strokeWidth = 2.0
-            stroke = Color.GRAY.deriveColor(0.0, 1.0, 1.0, 0.5)
+            stroke = if (start.x.get() - end.x.get() > 0) {
+                Color.DARKGREEN.deriveColor(0.0, 1.0, 1.0, 0.5)
+            } else {
+                Color.CADETBLUE.deriveColor(0.0, 1.0, 1.0, 0.5)
+            }
             strokeLineCap = StrokeLineCap.BUTT
+
             strokeDashArray.setAll(10.0, 5.0)
             isMouseTransparent = true
         }
