@@ -1,0 +1,44 @@
+
+.label {
+    -fx-padding: 2;
+}
+
+.ssec {
+    -fx-border-color: Gainsboro;
+    -fx-border-insets: 5;
+    -fx-padding: 5;
+}
+
+.title {
+    -fx-padding: 2;
+    -fx-font-size: 15;
+    -fx-font-family: "Comic Sans MS";
+    -fx-text-fill: CornFlowerBlue
+}
+
+.button {
+    -fx-font-size: 12;
+    -fx-font-family: "Comic Sans MS";
+    -fx-text-fill: DarkSlateGrey;
+    -fx-background-radius: 5em; 
+    -fx-min-width: 10px;
+    -fx-min-height: 10px;
+    -fx-max-width: 10px;
+    -fx-max-height: 10px;
+    -fx-background-color: -fx-body-color;
+    -fx-background-insets: 0px;
+    -fx-padding: 0px;
+}
+
+.label {
+    -fx-font-family: "Comic Sans MS";
+}
+
+.text-field {
+    -fx-font-family: "Comic Sans MS";
+    -fx-font-size: 24;
+}
+
+.text-area {
+    -fx-font-family: "Comic Sans MS";
+}

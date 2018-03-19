@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.BorderPane?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="lab02.Part2"
+            stylesheets="@style.css">
+
+    <BorderPane>
+        <left>
+            <BorderPane>
+                <top>
+                    <TextField fx:id="size" promptText="size"/>
+                </top>
+                <center>
+                    <TextArea fx:id="input" wrapText="true"
+                              promptText="input"
+                              prefWidth="284" prefHeight="335">
+                    </TextArea>
+                </center>
+            </BorderPane>
+        </left>
+        <right>
+            <TextArea fx:id="output" editable="false"
+                      focusTraversable="false"
+                      mouseTransparent="true"
+                      prefWidth="284" prefHeight="365"
+                      promptText="Output">
+            </TextArea>
+        </right>
+    </BorderPane>
+
+</AnchorPane>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="lab02.Part7"
+            stylesheets="@style.css">
+    <VBox spacing="10">
+        <HBox spacing="10">
+            <TextField fx:id="folderA" promptText="Religious Documents"
+                       editable="false" prefWidth="210"
+                       focusTraversable="false"
+                       onDragOver="#onDragOverA" onDragDropped="#onDragA"/>
+            <TextField fx:id="folderB" promptText="Political Documents"
+                       focusTraversable="false"
+                       editable="false" prefWidth="210"
+                       onDragOver="#onDragOverB" onDragDropped="#onDragB"/>
+            <TextField fx:id="thresholdField" promptText="τ: correlation threshold"
+                       prefWidth="130"/>
+        </HBox>
+            <TextArea fx:id="output"
+                      prefWidth="569"
+                      prefHeight="280"
+                      editable="false"
+                      wrapText="true"/>
+    </VBox>
+
+</AnchorPane>

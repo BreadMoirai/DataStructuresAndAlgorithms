@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.VBox?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="lab02.Part4"
+            stylesheets="@style.css">
+
+            <TextArea fx:id="output"
+                      prefWidth="569"
+                      prefHeight="370"
+                      editable="false"
+                      focusTraversable="false"
+                      wrapText="true"
+                      promptText="Drag and Drop File Here"
+                      onDragDropped="#onDragDone"
+                      onDragOver="#onDragOver"/>
+
+
+</AnchorPane>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.AnchorPane?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            stylesheets="@style.css">
+
+    <TabPane>
+        <Tab text="HashFunction">
+            <fx:include source="part1.fxml"/>
+        </Tab>
+        <Tab text="SeperateChaining">
+            <fx:include source="part2.fxml"/>
+        </Tab>
+        <Tab text="QuadraticProbing">
+            <fx:include source="part3.fxml"/>
+        </Tab>
+        <Tab text="Cleaning">
+            <fx:include source="part4.fxml"/>
+        </Tab>
+        <Tab text="ReadFile">
+            <fx:include source="part5.fxml"/>
+        </Tab>
+        <Tab text="Training">
+            <fx:include source="part6.fxml"/>
+        </Tab>
+        <Tab text="Testing">
+            <fx:include source="part7.fxml"/>
+        </Tab>
+
+    </TabPane>
+
+</AnchorPane>

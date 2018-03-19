@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.control.TextField?>
+<AnchorPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            fx:controller="lab02.Part6"
+            stylesheets="@style.css">
+    <VBox spacing="10">
+        <HBox spacing="10">
+            <TextField fx:id="folderA" promptText="Religious Documents"
+                       editable="false" prefWidth="280"
+                       focusTraversable="false"
+                       onDragOver="#onDragOverA" onDragDropped="#onDragA"/>
+            <TextField fx:id="folderB" promptText="Political Documents"
+                       editable="false" prefWidth="280"
+                       focusTraversable="false"
+                       onDragOver="#onDragOverB" onDragDropped="#onDragB"/>
+        </HBox>
+        <HBox spacing="10">
+            <TextArea fx:id="outputA"
+                      prefWidth="280"
+                      prefHeight="280"
+                      editable="false"
+                      focusTraversable="false"
+                      mouseTransparent="true"
+                      wrapText="true"/>
+        <TextArea fx:id="outputB"
+                      prefWidth="280"
+                      prefHeight="280"
+                      editable="false"
+                  focusTraversable="false"
+                  mouseTransparent="true"
+                      wrapText="true"/>
+        </HBox>
+    </VBox>
+
+</AnchorPane>

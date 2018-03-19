@@ -1,0 +1,37 @@
+
+.label {
+    -fx-padding: 2;
+}
+
+.ssec {
+    -fx-border-color: Gainsboro;
+    -fx-border-insets: 5;
+    -fx-padding: 5;
+}
+
+.title {
+    -fx-padding: 2;
+    -fx-font-size: 15;
+    -fx-font-family: "Comic Sans MS";
+    -fx-text-fill: CornFlowerBlue
+}
+
+.button {
+    -fx-background-color: aquamarine;
+    -fx-font-size: 12;
+    -fx-font-family: "Comic Sans MS";
+    -fx-text-fill: DarkSlateGrey;
+    -fx-effect: dropshadow( three-pass-box , rgba(0,0,0,0.6) , 5, 0.0 , 0 , 1 );
+    }
+
+.label {
+    -fx-font-family: "Comic Sans MS";
+}
+
+.text-field {
+    -fx-font-family: "Comic Sans MS";
+}
+
+.text-area {
+    -fx-font-family: "Comic Sans MS";
+}

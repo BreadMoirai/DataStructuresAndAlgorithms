@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.BorderPane?>
+<?import javafx.scene.layout.HBox?>
+<BorderPane xmlns="http://javafx.com/javafx"
+            xmlns:fx="http://javafx.com/fxml"
+            stylesheets="@style.css"
+            fx:controller="lab03.Controller">
+    <center>
+        <HBox spacing="10">
+            <TextField promptText="Input Equation Here"
+                       onAction="#onAction"
+                       prefWidth="500"/>
+        </HBox>
+    </center>
+</BorderPane>
