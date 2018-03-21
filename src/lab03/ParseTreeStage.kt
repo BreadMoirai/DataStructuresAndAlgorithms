@@ -1,6 +1,5 @@
 package lab03
 
-import com.sun.javafx.charts.Legend
 import javafx.beans.property.DoubleProperty
 import javafx.beans.property.SimpleDoubleProperty
 import javafx.geometry.Orientation
@@ -10,43 +9,36 @@ import javafx.scene.Group
 import javafx.scene.Node
 import javafx.scene.Scene
 import javafx.scene.control.Alert
-import javafx.scene.control.Label
 import javafx.scene.control.TextFormatter
 import javafx.scene.control.TextInputDialog
 import javafx.scene.control.Tooltip
-import javafx.scene.layout.FlowPane
 import javafx.scene.layout.HBox
 import javafx.scene.layout.TilePane
-import javafx.scene.layout.VBox
 import javafx.scene.paint.Color
-import javafx.scene.shape.Circle
-import javafx.scene.shape.Line
-import javafx.scene.shape.Rectangle
-import javafx.scene.shape.StrokeLineCap
-import javafx.scene.shape.StrokeType
+import javafx.scene.shape.*
 import javafx.scene.text.Font
 import javafx.scene.text.Text
 import javafx.scene.text.TextAlignment
 import javafx.stage.Stage
 import javafx.util.converter.IntegerStringConverter
-import javax.swing.GroupLayout
 
 private val nodeTip = Tooltip("Evaluate This Node")
 
 class ParseTreeStage(tree: ParseTree, title: String) : Stage() {
 
-    private val d = 800.0
+    private val w = 1000.0
+    private val h = 500.0
 
     init {
         this.title = title
-        this.scene = Scene(createNodeGroup(tree), d, d)
+        this.scene = Scene(createNodeGroup(tree), w, h)
     }
 
     private fun createNodeGroup(tree: ParseTree): Group {
         val graphNodes = mutableListOf<Node>()
 
         val treeH = tree.root.getHeight()
-        val secH = d / treeH
+        val secH = h / treeH
         val top = secH / 2
 
         var parentPoints = arrayOfNulls<Point>(0)
@@ -60,7 +52,7 @@ class ParseTreeStage(tree: ParseTree, title: String) : Stage() {
             for (i in nodes.indices) {
                 val node = nodes[i] ?: continue
 
-                val secW = d / nodes.size
+                val secW = w / nodes.size
                 val left = secW / 2
                 children[i * 2] = node.left
                 children[i * 2 + 1] = node.right
@@ -107,7 +99,7 @@ class ParseTreeStage(tree: ParseTree, title: String) : Stage() {
             return box
         }
 
-        private fun makeCircle(color: Color) : Circle {
+        private fun makeCircle(color: Color): Circle {
             val circle = Circle(10.0)
             circle.fill = color.deriveColor(1.0, 1.0, 1.0, 0.5)
             circle.stroke = color
@@ -122,10 +114,10 @@ class ParseTreeStage(tree: ParseTree, title: String) : Stage() {
     class DragNode(node: ParseTree.Node, p: Point) : Circle(p.x.get(), p.y.get(), 25.0) {
         init {
             val color = when (node.value) {
-                is ParseTree.Variable  -> Color.CORNFLOWERBLUE
+                is ParseTree.Variable -> Color.CORNFLOWERBLUE
                 is ParseTree.Operation -> Color.CORAL
-                is Int                 -> Color.MEDIUMAQUAMARINE
-                else                   -> Color.BLACK
+                is Int -> Color.MEDIUMAQUAMARINE
+                else -> Color.BLACK
             }
             fill = color.deriveColor(1.0, 1.0, 1.0, 0.5)
             stroke = color
@@ -179,7 +171,11 @@ class ParseTreeStage(tree: ParseTree, title: String) : Stage() {
                     translateX = layoutBounds.width / -2
                 }
             }
-            font = Font("Comic Sans", 24.0)
+            font = if (node.value is ParseTree.Operation)
+                Font("Comic Sans", 48.0)
+            else
+                Font("Comic Sans", 24.0)
+
             xProperty().bind(p.x)
             yProperty().bind(p.y)
             translateY = layoutBounds.height / 4

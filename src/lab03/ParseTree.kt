@@ -142,14 +142,14 @@ class ParseTree(text: String) {
         var opIdx = -1
         var op: Operation? = null
         for (i in left..right) {
-            val any = tokens[i]
-            when (any) {
+            val token = tokens[i]
+            when (token) {
                 '(' -> inPar++
                 ')' -> inPar--
                 is Operation -> {
                     if (inPar == 0) {
-                        if (op?.compareTo(any) ?: 1 > 0) {
-                            op = any
+                        if (op?.compareTo(token) ?: 1 >= 0) {
+                            op = token
                             opIdx = i
                         }
 
