@@ -17,19 +17,19 @@ import kotlin.reflect.KParameter
 import kotlin.reflect.KProperty
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSubtypeOf
-import kotlin.reflect.full.memberProperties
+import kotlin.reflect.full.primaryConstructor
 
 inline fun <reified R : Any> inputDialog(): InputDialog<R> {
     return InputDialog(R::class)
 }
 
-inline fun <reified R> KProperty<*>.isType(): Boolean {
-    return this.returnType.isSubtypeOf(R::class.createType())
+inline fun <reified R> KParameter.isType(): Boolean {
+    return this.type.isSubtypeOf(R::class.createType())
 }
 
-class InputField<R : Any?>(prop: KProperty<R>) : TextField() {
-    val name = prop.name
-    val label = Label(prop.name.replace("([A-Z])", " $0").capitalize())
+class InputField(prop: KParameter) : TextField() {
+    val name = prop.name!!
+    val label = Label(name.replace("([A-Z])", " $0").capitalize())
 
     init {
         textFormatterProperty().set(when {
@@ -37,7 +37,7 @@ class InputField<R : Any?>(prop: KProperty<R>) : TextField() {
             prop.isType<Int>() -> TextFormatter(IntegerStringConverter())
             prop.isType<Double>() -> TextFormatter(DoubleStringConverter())
             else -> {
-                throw UnsupportedOperationException("No Input configured for type ${prop.returnType}")
+                throw UnsupportedOperationException("No Input configured for type ${prop.type}")
             }
         })
     }
@@ -53,7 +53,7 @@ class InputField<R : Any?>(prop: KProperty<R>) : TextField() {
 
 class InputDialog<R : Any>(klass: KClass<R>) : Dialog<R>() {
 
-    private val fields = mutableListOf<InputField<*>>()
+    private val fields = mutableListOf<InputField>()
 
     init {
         if (klass.isData.not()) {
@@ -67,7 +67,8 @@ class InputDialog<R : Any>(klass: KClass<R>) : Dialog<R>() {
         grid.hgap = 10.0
         grid.vgap = 10.0
         grid.padding = Insets(20.0, 10.0, 10.0, 10.0)
-        for ((index, prop) in klass.memberProperties.reversed().withIndex()) {
+
+        for ((index, prop) in klass.primaryConstructor!!.parameters.withIndex()) {
             val inputField = InputField(prop)
             fields.add(inputField)
             inputField.addTo(grid, index)
