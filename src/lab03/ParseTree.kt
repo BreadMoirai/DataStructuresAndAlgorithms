@@ -173,7 +173,7 @@ class ParseTree(text: String) {
         val list = ArrayList<Any>()
         var i = 0
 
-        w@ while (i < text.length) {
+        while (i < text.length) {
             val c = text[i]
             when {
                 c.isWhitespace() -> {

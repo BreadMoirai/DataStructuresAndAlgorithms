@@ -12,13 +12,21 @@
   See the License for the specific language governing permissions and
   limitations under the License.
 */
+@file:Suppress("UNUSED_PARAMETER")
+
 package lab01
 
 import javafx.application.Platform
 import javafx.beans.property.SimpleStringProperty
 import javafx.event.ActionEvent
 import javafx.fxml.FXML
-import javafx.scene.control.*
+import javafx.scene.control.Alert
+import javafx.scene.control.Button
+import javafx.scene.control.ButtonType
+import javafx.scene.control.CheckBox
+import javafx.scene.control.Label
+import javafx.scene.control.TextArea
+import javafx.scene.control.TextField
 import util.mst
 import java.util.*
 import java.util.concurrent.CompletableFuture
@@ -43,13 +51,13 @@ class Controller {
     @FXML
     var resLabel: Label? = null
 
-    var runLabel = SimpleStringProperty()
+    private var runLabel = SimpleStringProperty()
 
     private val r = Random()
 
-    var inputArr: IntArray? = null
+    private var inputArr: IntArray? = null
 
-    var predictFor: Int? = null
+    private var predictFor: Int? = null
 
     @FXML
     var button: Button? = null
