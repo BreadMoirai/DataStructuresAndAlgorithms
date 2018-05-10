@@ -195,12 +195,12 @@ class Controller {
 //        timeline!!.play()
 
 
-        val runComputation = { a: IntArray, predict: Int? ->
+        val runComputation = { a5: IntArray, predict1: Int? ->
             var result: Int? = null
             val elapsedTime = measureNanoTime {
-                result = func(a)
+                result = func(a5)
             }
-            ComputationResult(name, result!!, a.size, elapsedTime, predict)
+            ComputationResult(name, result!!, a5.size, elapsedTime, predict1)
         }
         var async = CompletableFuture.supplyAsync { runComputation(a, predict).toString() }
         if (predict != null) {

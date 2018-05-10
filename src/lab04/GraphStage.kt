@@ -9,9 +9,8 @@ import kotlin.math.sqrt
 
 class GraphStage : Region() {
 
-    private val nodeSize = 25.0
     val nodes = ArrayList<GraphNode>()
-    private val edges = ArrayList<GraphEdge>()
+    val edges = ArrayList<GraphEdge>()
     private val order: Int
         get() = nodes.size
     private val size: Int
@@ -27,10 +26,13 @@ class GraphStage : Region() {
     }
 
     operator fun plusAssign(edge: GraphEdge) {
-        if (!edges.contains(edge)) {
-            edges += edge
-            children.addAll(0, edge.components)
-        }
+        edges += edge
+        children.addAll(0, edge.components)
+    }
+
+    operator fun minusAssign(edge: GraphEdge) {
+        edges -= edge
+        children.removeAll(edge.components)
     }
 
     operator fun plusAssign(node: Node) {
@@ -43,14 +45,13 @@ class GraphStage : Region() {
 
     private fun onClick(event: MouseEvent) {
         if (event.isStillSincePress) {
-
             if (nodes.parallelStream().anyMatch { node ->
                         sqrt((node.centerY - event.y).pow(2) + (node.centerX - event.x).pow(2)) < node.radius
                     }) {
                 return
             }
             val c = Character.toString('A' + nodes.size)
-            val element = GraphNode(c, event.x, event.y, nodeSize, Color.SLATEBLUE, this)
+            val element = GraphNode(c, event.x, event.y, Companion.nodeSize, Color.SLATEBLUE, this)
             this += element
         }
     }
@@ -71,6 +72,7 @@ class GraphStage : Region() {
 
     companion object {
         val noAction: (GraphNode) -> Unit = {}
+        const val nodeSize = 25.0
     }
 
 }

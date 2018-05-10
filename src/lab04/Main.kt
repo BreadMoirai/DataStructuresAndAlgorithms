@@ -32,6 +32,14 @@ import java.util.*
 
 class Main : Application() {
 
+    companion object {
+
+        @JvmStatic
+        fun main(args: Array<String>) {
+            launch(Main::class.java)
+        }
+    }
+
     @Throws(Exception::class)
     override fun start(primaryStage: Stage) {
         val root = BorderPane()
@@ -54,7 +62,17 @@ class Main : Application() {
         output.prefWidth = 100.0
         val b1 = Button("Distance")
         b1.setOnAction {
-            outputDistance(graph, output)
+            graph.setOnNodeClick { node ->
+                val distance = getDistance(node, graph)
+                output.text = distance.toList().sortedWith(kotlin.Comparator { o1, o2 ->
+                    when {
+                        o1.second == o2.second -> 0
+                        o1.second == -1        -> Int.MAX_VALUE
+                        else                   -> o1.second - o2.second
+                    }
+                }).joinToString("\n",
+                                "DISTANCE\nFROM [${node.name}]\n") { "${it.first.name}  |  ${if (it.second >= 0) it.second.toString() else "∞"}" }
+            }
         }
         val b2 = Button("Get K-Subsets")
         b2.setOnAction {
@@ -64,7 +82,56 @@ class Main : Application() {
         b3.setOnAction {
             outputSubsetNKAI(output)
         }
-        val pane = VBox(10.0, b1, b2, b3, output)
+        val b4 = Button("Waikabe")
+        b4.setOnAction {
+            for (i in 1..3) for (j in 1..4) {
+                val c = Character.toString('A' + graph.nodes.size)
+                val element = GraphNode(c, j * 100.0, i * 100.0, GraphStage.nodeSize, Color.SLATEBLUE, graph)
+                graph += element
+                if (i == 3 && j == 4) {
+                    val c1 = Character.toString('A' + graph.nodes.size)
+                    val element1 = GraphNode(c1, j * 100.0 + 100.0, i * 100.0, GraphStage.nodeSize, Color.SLATEBLUE,
+                                             graph)
+                    graph += element1
+                }
+            }
+            val nodeMap = mutableMapOf<String, GraphNode>()
+            graph.nodes.associateByTo(nodeMap, { it.name })
+            val createEdge = { a: String, b: String ->
+                GraphEdge(nodeMap[a]!!, nodeMap[b]!!, graph)
+            }
+            val pipes = listOf("A" to "F", "A" to "H", "B" to "M", "D" to "L", "F" to "E", "F" to "G", "G" to "A",
+                               "G" to "J", "G" to "L", "H" to "C", "H" to "I", "J" to "B", "J" to "D", "J" to "M",
+                               "K" to "C", "K" to "D", "K" to "H", "K" to "J", "K" to "M", "L" to "C", "L" to "I")
+            for (pipe in pipes) {
+                createEdge(pipe.first, pipe.second)
+            }
+        }
+        val b5 = Button("Waikabe B to E")
+        b5.setOnAction {
+            val nodeMap = mutableMapOf<String, GraphNode>()
+            graph.nodes.associateByTo(nodeMap, { it.name })
+            val createEdge = { a: String, b: String ->
+                GraphEdge(nodeMap[a]!!, nodeMap[b]!!, graph)
+            }
+            val pipes = listOf("K" to "J", "M" to "I", "J" to "B", "E" to "M", "H" to "L", "J" to "K", "J" to "I",
+                               "I" to "D", "E" to "A", "H" to "C", "I" to "M", "D" to "I", "G" to "C", "K" to "L",
+                               "F" to "D", "A" to "B", "H" to "K", "E" to "F", "G" to "H", "H" to "G", "E" to "H",
+                               "L" to "M", "I" to "B", "H" to "J", "E" to "D", "E" to "B", "A" to "C", "A" to "H",
+                               "G" to "D", "C" to "J", "J" to "L", "H" to "M", "E" to "L", "E" to "J", "G" to "J")
+            outer@ for (k in 1 until pipes.size) {
+                for (subset in getKSubsets(k, pipes.size - 1)) {
+                    val newPipes = subset.map { pipes[it] }.map { createEdge(it.first, it.second) }
+                    newPipes.forEach { it.mark() }
+                    if (getDistance(nodeMap["B"]!!, graph)[nodeMap["E"]!!] != -1) {
+                        output.text = newPipes.joinToString("\n") { "(${it.a.name}, ${it.b.name})"}
+                        break@outer
+                    }
+                    else newPipes.forEach { it.remove() }
+                }
+            }
+        }
+        val pane = VBox(10.0, b1, b2, b3, b4, b5, output)
         pane.padding = Insets(40.0, 10.0, 80.0, 10.0)
         pane.alignment = Pos.CENTER
         root.right = pane
@@ -76,12 +143,17 @@ class Main : Application() {
             return
         }
         val (n, k) = opt.get()
+        val list = getKSubsets(k, n)
+        output.text = list.joinToString("\n") { it.joinToString(",", "{", "}") }
+    }
+
+    private fun getKSubsets(k: Int, n: Int): MutableList<IntArray> {
         val array = (0 until k).toList().toIntArray()
-        val sb = StringBuilder()
+        val list = mutableListOf<IntArray>()
         do {
-            sb.append(array.joinToString(", ", "{", "}")).append('\n')
+            list += array.copyOf()
         } while (nextCombination(array, k, n))
-        output.text = sb.toString()
+        return list
     }
 
     private fun outputSubsetNKAI(output: TextArea) {
@@ -92,11 +164,10 @@ class Main : Application() {
         val (n, k, a, i) = opt.get()
         val array = (0 until k).toList().toIntArray()
         val sb = StringBuilder()
-        for (j in 1..i)
-            if (!nextCombination(array, k, n)) {
-                Alert(Alert.AlertType.ERROR, "${i}th $k-Subset does not exist")
-                return
-            }
+        for (j in 1..i) if (!nextCombination(array, k, n)) {
+            Alert(Alert.AlertType.ERROR, "${i}th $k-Subset does not exist")
+            return
+        }
 
         sb.append(array.map { it + a }.joinToString(", ", "{", "}")).append('\n')
 
@@ -104,56 +175,40 @@ class Main : Application() {
     }
 
     private fun nextCombination(array: IntArray, k: Int, maxS: Int): Boolean {
-        for (j in k - 1 downTo 0)
-            if (array[j] + (k - j) <= maxS) {
-                var v = array[j] + 1
-                for (r in j until k) {
-                    array[r] = v
-                    v++
-                }
-                return true
+        for (j in k - 1 downTo 0) if (array[j] + (k - j) <= maxS) {
+            var v = array[j] + 1
+            for (r in j until k) {
+                array[r] = v
+                v++
             }
+            return true
+        }
         return false
     }
 
-    private fun outputDistance(graph: GraphStage, output: TextArea) {
-        graph.setOnNodeClick { node ->
-            graph.setOnNodeClickNoAction()
-            val sb = StringBuilder()
-            sb.append("Distance From\n  Node [")
-                    .append(node.name)
-                    .append("]\n")
-            val visited = mutableSetOf(node)
-            val queue = ArrayDeque<GraphNode>()
-            val nextLevel = mutableSetOf<GraphNode>()
-            node.connections.toCollection(queue)
-            var i = 1
-            do {
-                queue.addAll(nextLevel)
-                nextLevel.clear()
-                while (queue.isNotEmpty()) {
-                    val pop = queue.pop()
-                    pop.connections.stream().filter { !visited.contains(it) }
-                            .forEach { nextLevel.add(it) }
-                    sb.append(pop.name).append(" | ").append(i).append('\n')
-                    visited.add(pop)
-                }
-                i += 1
-            } while (nextLevel.isNotEmpty())
-            for (notVisited in graph.nodes.minus(visited)) {
-                sb.append(notVisited.name).append(" | ").append('∞').append('\n')
+    private fun getDistance(node: GraphNode, graph: GraphStage): MutableMap<GraphNode, Int> {
+        graph.setOnNodeClickNoAction()
+        val sb = StringBuilder()
+        sb.append("Distance From\n  Node [").append(node.name).append("]\n")
+        val queue = ArrayDeque<GraphNode>()
+        val nextLevel = mutableSetOf<GraphNode>()
+        node.edges.map { it.b }.toCollection(queue)
+        val visited = mutableMapOf(node to 0)
+        var i = 1
+        do {
+            queue.addAll(nextLevel)
+            nextLevel.clear()
+            while (queue.isNotEmpty()) {
+                val pop = queue.pop()
+                pop.edges.map { it.b }.stream().filter { !visited.contains(it) }.forEach { nextLevel.add(it) }
+                visited[pop] = i
             }
-            output.text = sb.toString()
-        }
+            i += 1
+        } while (nextLevel.isNotEmpty())
+        graph.nodes.filter { visited.contains(it).not() }.forEach { visited[it] = -1 }
+        return visited
     }
 
-    companion object {
-
-        @JvmStatic
-        fun main(args: Array<String>) {
-            launch(Main::class.java)
-        }
-    }
 }
 
 data class NK(val n: Int, val k: Int)

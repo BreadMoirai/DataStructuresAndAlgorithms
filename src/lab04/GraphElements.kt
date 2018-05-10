@@ -15,6 +15,7 @@ import javafx.scene.shape.MoveTo
 import javafx.scene.shape.Path
 import javafx.scene.shape.StrokeLineCap
 import javafx.scene.shape.StrokeType
+import javafx.scene.text.Font
 import javafx.scene.text.Text
 import javafx.scene.text.TextAlignment
 
@@ -44,7 +45,7 @@ class Point(x: Double = 0.0, y: Double = 0.0) {
 
 class GraphNode(val name: String, x: Double, y: Double, s: Double, c: Color, val graph: GraphStage) : Circle(x, y, s) {
     val point = Point()
-    val connections = mutableSetOf<GraphNode>()
+    val edges = mutableSetOf<GraphEdge>()
     val components: List<Node>
         get() = listOf(this, core, core.text)
 
@@ -90,8 +91,7 @@ class GraphNode(val name: String, x: Double, y: Double, s: Double, c: Color, val
             }
         }
         setOnMouseEntered { event ->
-            if (!event.isPrimaryButtonDown)
-                scene.cursor = Cursor.HAND
+            if (!event.isPrimaryButtonDown) scene.cursor = Cursor.HAND
 
         }
         setOnMouseExited { event ->
@@ -111,6 +111,7 @@ class GraphNode(val name: String, x: Double, y: Double, s: Double, c: Color, val
             with(text) {
                 point.bindX(xProperty())
                 point.bindY(yProperty())
+                font = Font("Comic Sans", 30.0)
                 translateY = layoutBounds.height / 4
                 translateX = layoutBounds.width / -2
                 textAlignment = TextAlignment.CENTER
@@ -128,19 +129,17 @@ class GraphNode(val name: String, x: Double, y: Double, s: Double, c: Color, val
 
         private fun enableAction() {
             setOnMouseEntered { event ->
-                if (!event.isPrimaryButtonDown)
-                    scene.cursor = Cursor.CROSSHAIR
+                if (!event.isPrimaryButtonDown) scene.cursor = Cursor.CROSSHAIR
             }
             setOnMouseExited { event ->
-                if (!event.isPrimaryButtonDown)
-                    scene.cursor = Cursor.DEFAULT
+                if (!event.isPrimaryButtonDown) scene.cursor = Cursor.DEFAULT
             }
             var endPoint: Point? = null
             var lineDrag: BoundLine? = null
             setOnMousePressed { event ->
 
             }
-            setOnMouseReleased {event ->
+            setOnMouseReleased { event ->
                 if (event.isStillSincePress) {
                     graph.onNodeClick(this@GraphNode)
                     event.consume()
@@ -181,14 +180,12 @@ class GraphNode(val name: String, x: Double, y: Double, s: Double, c: Color, val
             }
             setOnMouseDragExited { event ->
                 setColor(colorStroke, colorFill)
-                if (event.gestureSource is Core)
-                    (event.gestureSource as Core).setColor(colorStroke, colorFill)
+                if (event.gestureSource is Core) (event.gestureSource as Core).setColor(colorStroke, colorFill)
             }
             setOnMouseDragReleased { event ->
                 if (event.gestureSource is Core && event.gestureSource !== this) {
                     val a = (event.gestureSource as Core).node
-                    a.connections += this@GraphNode
-                    graph += GraphEdge(a, this@GraphNode, graph)
+                    GraphEdge(a, this@GraphNode, graph)
                 }
             }
         }
@@ -197,28 +194,52 @@ class GraphNode(val name: String, x: Double, y: Double, s: Double, c: Color, val
 
 class GraphEdge(val a: GraphNode, val b: GraphNode, val graph: GraphStage) {
 
-    private val arc = BoundLine(a.point, b.point)
+    private val arc = BoundArc(a.point, b.point)
 
     val components: Collection<Node>
         get() = listOf(arc)
 
     init {
+        if (!graph.edges.contains(this)) {
+            graph += this
+            a.edges += this
+        } else {
+            println("DUPED")
+        }
+    }
 
+    fun remove() {
+        a.edges -= this
+        graph -= this
+    }
+
+    fun mark() {
+        arc.mark()
+    }
+
+    fun unmark() {
+        arc.unmark()
     }
 
     override fun equals(other: Any?): Boolean {
         return other is GraphEdge && other.a === a && other.b === b
     }
+
+    override fun hashCode(): Int {
+        var result = a.hashCode()
+        result = 31 * result + b.hashCode()
+        return result
+    }
 }
 
-class BoundLine(val start: Point,val end: Point) : Line() {
+class BoundLine(val start: Point, val end: Point) : Line() {
 
     private val grad
-     get() = LinearGradient(start.x, start.y, end.x, end.y, false, CycleMethod.NO_CYCLE, Stop(0.0, Color.CRIMSON.deriveColor(1.0, 1.0, 1.0, 0.7)), Stop(1.0, Color.PALEGREEN.deriveColor(1.0, 1.0, 1.0, 0.7)) )
+        get() = LinearGradient(start.x, start.y, end.x, end.y, false, CycleMethod.NO_CYCLE,
+                               Stop(0.0, Color.RED.deriveColor(1.0, 1.0, 1.0, 0.7)), Stop(.5, Color.DARKSLATEGREY),
+                               Stop(1.0, Color.SPRINGGREEN))
 
     init {
-        start.addListener{ _, _ -> stroke = grad }
-        end.addListener{ _, _ -> stroke = grad }
         start.bindX(startXProperty())
         start.bindY(startYProperty())
         end.bindX(endXProperty())
@@ -228,22 +249,55 @@ class BoundLine(val start: Point,val end: Point) : Line() {
         strokeLineCap = StrokeLineCap.SQUARE
         isMouseTransparent = true
     }
+
+    fun mark() {
+        stroke = LinearGradient(start.x, start.y, end.x, end.y, false, CycleMethod.NO_CYCLE,
+                                Stop(0.0, Color.DEEPSKYBLUE.deriveColor(1.0, 1.0, 1.0, 0.7)),
+                                Stop(.5, Color.DARKSLATEGREY), Stop(1.0, Color.SPRINGGREEN))
+    }
+
+    fun unmark() {
+        stroke = grad
+    }
 }
 
-class BoundArc(start: Point, end: Point) : Path() {
+class BoundArc(val start: Point, val end: Point) : Path() {
+
+    private var isMark = false
+    private val grad
+        get() = if (isMark) LinearGradient(start.x, start.y, end.x, end.y, false, CycleMethod.NO_CYCLE,
+                                           Stop(0.0, Color.HOTPINK), Stop(1.0, Color.GOLD))
+        else LinearGradient(start.x, start.y, end.x, end.y, false, CycleMethod.NO_CYCLE,
+                            Stop(0.0, Color.RED.deriveColor(1.0, 1.0, 1.0, 0.7)), Stop(.5, Color.DARKSLATEGREY),
+                            Stop(1.0, Color.SPRINGGREEN))
+
     init {
+        start.addListener{ _, _ -> stroke = grad }
+        end.addListener{ _, _ -> stroke = grad }
         isMouseTransparent = true
         strokeWidth = 3.0
         stroke = Color.FIREBRICK.deriveColor(1.0, 1.0, 1.0, 0.86)
         val moveTo = MoveTo()
         start.bindX(moveTo.xProperty())
         start.bindY(moveTo.yProperty())
-        elements + moveTo
+        elements += moveTo
         val arc = ArcTo()
         end.bindX(arc.xProperty())
         end.bindY(arc.yProperty())
-        arc.radiusX = 1.0
-        arc.radiusY = 1.0
-        elements + arc
+        arc.radiusX = 900.0
+        arc.radiusY = 900.0
+        elements += arc
+        stroke = grad
     }
+
+    fun mark() {
+        isMark = true
+        stroke = grad
+    }
+
+    fun unmark() {
+        isMark = false
+        stroke = grad
+    }
+
 }
