@@ -136,9 +136,6 @@ class GraphNode(val name: String, x: Double, y: Double, s: Double, c: Color, val
             }
             var endPoint: Point? = null
             var lineDrag: BoundLine? = null
-            setOnMousePressed { event ->
-
-            }
             setOnMouseReleased { event ->
                 if (event.isStillSincePress) {
                     graph.onNodeClick(this@GraphNode)

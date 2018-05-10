@@ -10,11 +10,11 @@ import javafx.scene.control.TextFormatter
 import javafx.scene.layout.GridPane
 import javafx.scene.layout.Region
 import javafx.util.Callback
+import javafx.util.StringConverter
 import javafx.util.converter.DoubleStringConverter
 import javafx.util.converter.IntegerStringConverter
 import kotlin.reflect.KClass
 import kotlin.reflect.KParameter
-import kotlin.reflect.KProperty
 import kotlin.reflect.full.createType
 import kotlin.reflect.full.isSubtypeOf
 import kotlin.reflect.full.primaryConstructor
@@ -33,7 +33,16 @@ class InputField(prop: KParameter) : TextField() {
 
     init {
         textFormatterProperty().set(when {
-            prop.isType<String>() -> TextFormatter<String> { c -> c }
+            prop.isType<String>() -> TextFormatter<String>(object : StringConverter<String>() {
+                override fun toString(`object`: String?): String {
+                    return `object` ?: ""
+                }
+
+                override fun fromString(string: String?): String {
+                    return string ?: ""
+                }
+
+            })
             prop.isType<Int>() -> TextFormatter(IntegerStringConverter())
             prop.isType<Double>() -> TextFormatter(DoubleStringConverter())
             else -> {
