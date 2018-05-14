@@ -51,7 +51,7 @@ class GraphStage : Region() {
                 return
             }
             val c = Character.toString('A' + nodes.size)
-            val element = GraphNode(c, event.x, event.y, Companion.nodeSize, Color.SLATEBLUE, this)
+            val element = GraphNode(c, event.x, event.y, nodeSize, Color.SLATEBLUE, this)
             this += element
         }
     }
@@ -68,6 +68,12 @@ class GraphStage : Region() {
 
     fun onNodeClick(node: GraphNode) {
         action.invoke(node)
+    }
+
+    fun clear() {
+        nodes.clear()
+        edges.clear()
+        children.clear()
     }
 
     companion object {

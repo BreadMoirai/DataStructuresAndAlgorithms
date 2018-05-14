@@ -67,11 +67,11 @@ class Main : Application() {
                 output.text = distance.toList().sortedWith(kotlin.Comparator { o1, o2 ->
                     when {
                         o1.second == o2.second -> 0
-                        o1.second == -1        -> Int.MAX_VALUE
-                        else                   -> o1.second - o2.second
+                        o1.second == -1 -> Int.MAX_VALUE
+                        else -> o1.second - o2.second
                     }
                 }).joinToString("\n",
-                                "DISTANCE\nFROM [${node.name}]\n") { "${it.first.name}  |  ${if (it.second >= 0) it.second.toString() else "∞"}" }
+                        "DISTANCE\nFROM [${node.name}]\n") { "${it.first.name}  |  ${if (it.second >= 0) it.second.toString() else "∞"}" }
             }
         }
         val b2 = Button("Get K-Subsets")
@@ -91,7 +91,7 @@ class Main : Application() {
                 if (i == 3 && j == 4) {
                     val c1 = Character.toString('A' + graph.nodes.size)
                     val element1 = GraphNode(c1, j * 100.0 + 100.0, i * 100.0, GraphStage.nodeSize, Color.SLATEBLUE,
-                                             graph)
+                            graph)
                     graph += element1
                 }
             }
@@ -101,8 +101,8 @@ class Main : Application() {
                 GraphEdge(nodeMap[a]!!, nodeMap[b]!!, graph)
             }
             val pipes = listOf("A" to "F", "A" to "H", "B" to "M", "D" to "L", "F" to "E", "F" to "G", "G" to "A",
-                               "G" to "J", "G" to "L", "H" to "C", "H" to "I", "J" to "B", "J" to "D", "J" to "M",
-                               "K" to "C", "K" to "D", "K" to "H", "K" to "J", "K" to "M", "L" to "C", "L" to "I")
+                    "G" to "J", "G" to "L", "H" to "C", "H" to "I", "J" to "B", "J" to "D", "J" to "M",
+                    "K" to "C", "K" to "D", "K" to "H", "K" to "J", "K" to "M", "L" to "C", "L" to "I")
             for (pipe in pipes) {
                 createEdge(pipe.first, pipe.second)
             }
@@ -112,26 +112,61 @@ class Main : Application() {
             val nodeMap = mutableMapOf<String, GraphNode>()
             graph.nodes.associateByTo(nodeMap, { it.name })
             val createEdge = { a: String, b: String ->
-                GraphEdge(nodeMap[a]!!, nodeMap[b]!!, graph)
+                val edge = GraphEdge(nodeMap[a]!!, nodeMap[b]!!, graph)
+                edge.mark()
+                edge
             }
-            val pipes = listOf("K" to "J", "M" to "I", "J" to "B", "E" to "M", "H" to "L", "J" to "K", "J" to "I",
-                               "I" to "D", "E" to "A", "H" to "C", "I" to "M", "D" to "I", "G" to "C", "K" to "L",
-                               "F" to "D", "A" to "B", "H" to "K", "E" to "F", "G" to "H", "H" to "G", "E" to "H",
-                               "L" to "M", "I" to "B", "H" to "J", "E" to "D", "E" to "B", "A" to "C", "A" to "H",
-                               "G" to "D", "C" to "J", "J" to "L", "H" to "M", "E" to "L", "E" to "J", "G" to "J")
+            val pipes = listOf('M' to 'I', 'E' to 'M', 'H' to 'L', 'J' to 'K', 'J' to 'I',
+                    'I' to 'D', 'E' to 'A', 'I' to 'M', 'D' to 'I', 'G' to 'C', 'K' to 'L',
+                    'F' to 'D', 'A' to 'B', 'H' to 'K', 'E' to 'F', 'G' to 'H', 'H' to 'G', 'E' to 'H',
+                    'L' to 'M', 'I' to 'B', 'H' to 'J', 'E' to 'D', 'E' to 'B', 'A' to 'C',
+                    'G' to 'D', 'C' to 'J', 'J' to 'L', 'H' to 'M', 'E' to 'L', 'E' to 'J')
+            val waikabe = listOf('A' to 'F', 'A' to 'H', 'B' to 'M', 'D' to 'L', 'F' to 'E', 'F' to 'G', 'G' to 'A',
+                    'G' to 'J', 'G' to 'L', 'H' to 'C', 'H' to 'I', 'J' to 'B', 'J' to 'D', 'J' to 'M',
+                    'K' to 'C', 'K' to 'D', 'K' to 'H', 'K' to 'J', 'K' to 'M', 'L' to 'C', 'L' to 'I')
+            val map = mutableMapOf<Char, MutableList<Char>>()
+            for (i in 'A'..'M') {
+                map[i] = mutableListOf()
+            }
+            for (pipe in waikabe) {
+                map[pipe.first]!! += pipe.second
+            }
+
             outer@ for (k in 1 until pipes.size) {
                 for (subset in getKSubsets(k, pipes.size - 1)) {
-                    val newPipes = subset.map { pipes[it] }.map { createEdge(it.first, it.second) }
-                    newPipes.forEach { it.mark() }
-                    if (getDistance(nodeMap["B"]!!, graph)[nodeMap["E"]!!] != -1) {
-                        output.text = newPipes.joinToString("\n") { "(${it.a.name}, ${it.b.name})"}
-                        break@outer
+                    val newPipes = subset.map { pipes[it] }
+                    for (pipe in newPipes) {
+                        if (pipe.second in map[pipe.first]!!) {
+                            println("duplicate pipe")
+                        }
+                        map[pipe.first]!! += pipe.second
                     }
-                    else newPipes.forEach { it.remove() }
+                    val visited = mutableSetOf<Char>()
+                    val queue = ArrayDeque<Char>(listOf('B'))
+                    while (queue.isNotEmpty()) {
+                        val pop = queue.pop()
+                        visited += pop
+                        map[pop]!!.filter { it !in visited }.forEach { queue += it }
+                    }
+                    if ('E' in visited) {
+                        for (pipe in newPipes) {
+                            createEdge(pipe.first.toString(), pipe.second.toString())
+                            output.text = newPipes.joinToString("\n") { "(${it.first}, ${it.second})" }
+                        }
+                        break@outer
+                    } else {
+                        for (pipe in newPipes) {
+                            map[pipe.first]!! -= pipe.second
+                        }
+                    }
                 }
             }
         }
-        val pane = VBox(10.0, b1, b2, b3, b4, b5, output)
+        val b6 = Button("Clear")
+        b6.setOnAction {
+            graph.clear()
+        }
+        val pane = VBox(10.0, b1, b2, b3, b4, b5, output, b6)
         pane.padding = Insets(40.0, 10.0, 80.0, 10.0)
         pane.alignment = Pos.CENTER
         root.right = pane

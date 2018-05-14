@@ -37,9 +37,9 @@ class Controller {
         val awit = inputDialog<NABPQ>().showAndWait()
         if (awit.isPresent.not()) return
         val (n, a, b, p, q) = awit.get()
-        val arr = List(n) { i -> UnitTask(i.toString(), ThreadLocalRandom.current().nextInt(a, b), ThreadLocalRandom.current().nextInt(p, q))}
+        val arr = List(n) { i -> UnitTask(i.toString(), if (a == b) a else ThreadLocalRandom.current().nextInt(a, b), if (p == q) p else ThreadLocalRandom.current().nextInt(p, q)) }
         output.text = "NAIVE: " + mst(measureNanoTime { naive(arr) }) +
-                    "\nDISJOINT-SET: " + mst(measureNanoTime { disJoint(arr) })
+                "\nDISJOINT-SET: " + mst(measureNanoTime { disJoint(arr) })
     }
 
     fun naive(tasks: List<UnitTask>): Int {
@@ -57,56 +57,49 @@ class Controller {
     }
 
     fun disJoint(tasks: List<UnitTask>): Int {
-        val sched = mutableListOf<UnitTask>()
+        val output = mutableListOf<UnitTask>()
         val max = tasks.maxBy { it.deadline }!!.deadline
-        val array = Array(max + 1) { i -> TaskSet(time = i, members = if (i != 0) arrayOf(i) else emptyArray()) }
+        val array = Array(max + 1) { i -> TaskSet(i, if (i != 0) arrayOf(i) else emptyArray()) }
         for (task in tasks.sortedByDescending { it.profit }) {
             val set = array[task.deadline]
-            if (set.time != 0) {
-                sched += task
-                val mergeIdx = set.getMergeIdx()
-                if (mergeIdx != -1) {
-                    set.merge(array[mergeIdx]).updatePointers(array)
+            if (set.time <= 0) continue
+            output += task
+            for (i in set.time - 1 downTo 0) {
+                val other = array[i]
+                if (other !== set) {
+                    if (set.list.size >= other.list.size) {
+                        set.merge(other)
+                        for (ptr in other.list) {
+                            array[ptr] = set
+                        }
+                    } else {
+                        other.merge(set)
+                        for (ptr in set.list) {
+                            array[ptr] = other
+                        }
+                    }
                 }
             }
         }
-        return sched.sumBy { it.profit }
+        return output.sumBy { it.profit }
     }
 }
 
 data class UnitTask(val name: String, val deadline: Int, val profit: Int)
 
 class TaskSet(var time: Int, members: Array<Int>) {
-    val list = members.toMutableSet()
+    val list = members.toHashSet()
 
     operator fun plusAssign(o: Int) {
         list += o
     }
 
-    fun getMergeIdx(): Int {
-        val max = list.max()!!
-        for (i in max downTo 0) {
-            if (i !in list) {
-                return i
-            }
-        }
-        return -1
-    }
-
     fun merge(other: TaskSet): TaskSet {
-        if (list.size > other.list.size) return other.merge(this)
-        else {
-            list += other.list
-            time = min(time, other.time)
-        }
+        list += other.list
+        time = min(time, other.time)
         return this
     }
 
-    fun updatePointers(arr: Array<TaskSet>) {
-        for (i in list) {
-            arr[i] = this
-        }
-    }
 }
 
 data class NABPQ(val n: Int, val a: Int, val b: Int, val p: Int, val q: Int)

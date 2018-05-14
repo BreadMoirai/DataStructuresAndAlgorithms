@@ -102,30 +102,32 @@ class Controller {
         }
         val (p, q) = wait.get()
         val d = Array(p.length + 1) { IntArray(q.length + 1) }
-        for (i in 0 .. p.length) {
-            for (j in 0 .. q.length) {
+        for (i in 0..p.length) {
+            for (j in 0..q.length) {
                 d[i][j] = when {
                     i == 0 -> j
                     j == 0 -> i
-                    else -> minOf(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + if (p[i-1] != q[j-1]) 1 else 0)
+                    else -> minOf(
+                            d[i - 1][j] + 1,
+                            d[i][j - 1] + 1,
+                            d[i - 1][j - 1] + if (p[i - 1] != q[j - 1]) 1 else 0)
                 }
             }
         }
         val sb = StringBuilder()
         var i = p.length
         var j = q.length
-        do {
-            val x = d[i][j]
-            sb.append( when (x - 1) {
-                d[i - 1][j - 1] -> "${p[--i]} -> ${q[--j]}\n"
-                d[i - 1][j] -> "- ${p[--i]}\n"
-                d[i][j - 1] -> "+ ${q[--j]}\n"
-                else -> when (x) {
-                    d[i - 1][j - 1] -> "${p[--i]} == ${q[--j]}\n"
-                    else -> "ERR"
-                }
+        while (d[i][j] != 0) {
+            sb.append(when {
+                i == 0 -> "+ ${q[--j]}"
+                j == 0 -> "- ${p[--i]}"
+                d[i][j] - 1 == d[i - 1][j - 1] -> "${p[--i]} -> ${q[--j]}\n"
+                d[i][j] - 1 == d[i - 1][j] -> "- ${p[--i]}\n"
+                d[i][j] - 1 == d[i][j - 1] -> "+ ${q[--j]}\n"
+                d[i][j] == d[i - 1][j - 1] -> "${p[--i]} == ${q[--j]}\n"
+                else -> "ERR"
             })
-        } while (i > 0 && j > 0)
+        }
         output.text = sb.toString()
     }
 }
